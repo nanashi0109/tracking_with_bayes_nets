@@ -93,17 +93,42 @@ def joinFactors(factors: List[Factor]):
     if len(factors) > 1:
         intersect = functools.reduce(lambda x, y: x & y, setsOfUnconditioned)
         if len(intersect) > 0:
-            print("Factor failed joinFactors typecheck: ", factor)
+            print("Factor failed joinFactors typecheck: ", factors)
             raise ValueError("unconditionedVariables can only appear in one factor. \n"
                     + "unconditionedVariables: " + str(intersect) + 
                     "\nappear in more than one input factor.\n" + 
                     "Input factors: \n" +
                     "\n".join(map(str, factors)))
 
-
     "*** YOUR CODE HERE ***"
-    raiseNotDefined()
+    conditionalVariables = set()
+    unconditionalVariables = set()
+    variableDomainList = {}
+
+    for factor in factors:
+        for uncon in factor.unconditionedVariables():
+            if uncon in conditionalVariables:
+                conditionalVariables.remove(uncon)
+            unconditionalVariables.add(uncon)
+            variableDomainList[uncon] = factor.variableDomainsDict()[uncon]
+
+        for con in factor.conditionedVariables():
+            if con not in unconditionalVariables:
+                conditionalVariables.add(con)
+                variableDomainList[con] = factor.variableDomainsDict()[con]
+
+    resultFactor = Factor(unconditionalVariables, conditionalVariables, variableDomainList)
+
+    for assignment in resultFactor.getAllPossibleAssignmentDicts():
+        probability = 1
+        for factor in factors:
+            probability *= factor.getProbability(assignment)
+        resultFactor.setProbability(assignment, probability)
+
+    return resultFactor
+
     "*** END YOUR CODE HERE ***"
+
 
 ########### ########### ###########
 ########### QUESTION 3  ###########
