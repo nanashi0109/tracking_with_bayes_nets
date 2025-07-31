@@ -166,10 +166,10 @@ def eliminateWithCallTracking(callTrackingList=None):
         if eliminationVariable not in factor.unconditionedVariables():
             print("Factor failed eliminate typecheck: ", factor)
             raise ValueError("Elimination variable is not an unconditioned variable " \
-                            + "in this factor\n" + 
+                            + "in this factor\n" +
                             "eliminationVariable: " + str(eliminationVariable) + \
                             "\nunconditionedVariables:" + str(factor.unconditionedVariables()))
-        
+
         if len(factor.unconditionedVariables()) == 1:
             print("Factor failed eliminate typecheck: ", factor)
             raise ValueError("Factor has only one unconditioned variable, so you " \
@@ -178,7 +178,25 @@ def eliminateWithCallTracking(callTrackingList=None):
                     "unconditionedVariables: " + str(factor.unconditionedVariables()))
 
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        unconditionalVariables = factor.unconditionedVariables()
+        conditionalVariables = factor.conditionedVariables()
+        variableDomain = factor.variableDomainsDict()
+
+        unconditionalVariables.remove(eliminationVariable)
+        print(factor.variableDomainsDict())
+
+        resultFactor = Factor(unconditionalVariables, conditionalVariables, variableDomain)
+
+        for assignment in resultFactor.getAllPossibleAssignmentDicts():
+            probability = 0
+            for value in factor.variableDomainsDict()[eliminationVariable]:
+                new_assignment = assignment.copy()
+                new_assignment[eliminationVariable] = value
+                probability += factor.getProbability(new_assignment)
+
+            resultFactor.setProbability(assignment, probability)
+
+        return resultFactor
         "*** END YOUR CODE HERE ***"
 
     return eliminate
