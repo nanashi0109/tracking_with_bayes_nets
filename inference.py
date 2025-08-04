@@ -61,19 +61,19 @@ def constructBayesNet(gameState: hunters.GameState):
     variableDomainsDict = {}
 
     "*** YOUR CODE HERE ***"
-    agents_const = [PAC, GHOST0, GHOST1]
-    obs_const = [OBS0, OBS1]
+    agentsConstants = [PAC, GHOST0, GHOST1]
+    obsConstatnts = [OBS0, OBS1]
 
     possible_positions = []
     for x in range(X_RANGE):
         for y in range(Y_RANGE):
             possible_positions.append((x, y))
 
-    for agent in agents_const:
+    for agent in agentsConstants:
         variableDomainsDict[agent] = possible_positions
 
     possible_distances = [i for i in range(X_RANGE + Y_RANGE + MAX_NOISE-1)]
-    for obs in obs_const:
+    for obs in obsConstatnts:
         variableDomainsDict[obs] = possible_distances
     "*** END YOUR CODE HERE ***"
 
@@ -195,7 +195,27 @@ def inferenceByVariableEliminationWithCallTracking(callTrackingList=None):
             eliminationOrder = sorted(list(eliminationVariables))
 
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        currentFactors = bayesNet.getAllCPTsWithEvidence(evidenceDict)
+
+        for variable in eliminationOrder:
+            factorToJoin = [factor for factor in currentFactors if variable in factor.variables()]
+
+            if not factorToJoin:
+                continue
+
+            _, joinedFactor = joinFactorsByVariable(factorToJoin, variable)
+
+            if len(joinedFactor.unconditionedVariables()) != 1 or variable not in joinedFactor.unconditionedVariables():
+                newFactor = eliminate(joinedFactor, variable)
+            else:
+                newFactor = None
+
+            currentFactors = [factor for factor in currentFactors if variable not in factor.variables()]
+            if newFactor is not None:
+                currentFactors.append(newFactor)
+
+        resultFactor = joinFactors(currentFactors)
+        return normalize(resultFactor)
         "*** END YOUR CODE HERE ***"
 
 
