@@ -339,24 +339,30 @@ class DiscreteDistribution(dict):
         to 1. The ratio of values for all keys will remain the same. In the case
         where the total value of the distribution is 0, do nothing.
 
-        >>> dist = DiscreteDistribution()
-        >>> dist['a'] = 1
-        >>> dist['b'] = 2
-        >>> dist['c'] = 2
-        >>> dist['d'] = 0
-        >>> dist.normalize()
-        >>> list(sorted(dist.items()))
+        dist = DiscreteDistribution()
+        dist['a'] = 1
+        dist['b'] = 2
+        dist['c'] = 2
+        dist['d'] = 0
+        dist.normalize()
+        list(sorted(dist.items()))
         [('a', 0.2), ('b', 0.4), ('c', 0.4), ('d', 0.0)]
-        >>> dist['e'] = 4
-        >>> list(sorted(dist.items()))
+        dist['e'] = 4
+        list(sorted(dist.items()))
         [('a', 0.2), ('b', 0.4), ('c', 0.4), ('d', 0.0), ('e', 4)]
-        >>> empty = DiscreteDistribution()
-        >>> empty.normalize()
-        >>> empty
+        empty = DiscreteDistribution()
+        empty.normalize()
+        empty
         {}
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        if len(self.keys()) == 0 or self.total() == 0:
+            return
+        divider = self.total()
+
+        for key in self.keys():
+            self[key] /= divider
+
         "*** END YOUR CODE HERE ***"
 
     def sample(self):
@@ -364,24 +370,32 @@ class DiscreteDistribution(dict):
         Draw a random sample from the distribution and return the key, weighted
         by the values associated with each key.
 
-        >>> dist = DiscreteDistribution()
-        >>> dist['a'] = 1
-        >>> dist['b'] = 2
-        >>> dist['c'] = 2
-        >>> dist['d'] = 0
-        >>> N = 100000.0
-        >>> samples = [dist.sample() for _ in range(int(N))]
-        >>> round(samples.count('a') * 1.0/N, 1)  # proportion of 'a'
+        dist = DiscreteDistribution()
+        dist['a'] = 1
+        dist['b'] = 2
+        dist['c'] = 2
+        dist['d'] = 0
+        N = 100000.0
+        samples = [dist.sample() for _ in range(int(N))]
+        round(samples.count('a') * 1.0/N, 1)  # proportion of 'a'
         0.2
-        >>> round(samples.count('b') * 1.0/N, 1)
+        round(samples.count('b') * 1.0/N, 1)
         0.4
-        >>> round(samples.count('c') * 1.0/N, 1)
+        round(samples.count('c') * 1.0/N, 1)
         0.4
-        >>> round(samples.count('d') * 1.0/N, 1)
+        round(samples.count('d') * 1.0/N, 1)
         0.0
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        self.normalize()
+
+        value = random.random()
+        borders = [0, 0]
+        for key in self.keys():
+            borders[1] += self[key]
+            if (value >= borders[0]) and (value < borders[1]):
+                return key
+            borders[0] += self[key]
         "*** END YOUR CODE HERE ***"
 
 
@@ -456,7 +470,14 @@ class InferenceModule:
         Return the probability P(noisyDistance | pacmanPosition, ghostPosition).
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        if jailPosition == ghostPosition:
+            return 1 if noisyDistance is None else 0
+        if noisyDistance is None:
+            return 0
+
+        trueDistance = manhattanDistance(pacmanPosition, ghostPosition)
+        noisyProb = busters.getObservationProbability(noisyDistance, trueDistance)
+        return noisyProb
         "*** END YOUR CODE HERE ***"
 
     def setGhostPosition(self, gameState, ghostPosition, index):
