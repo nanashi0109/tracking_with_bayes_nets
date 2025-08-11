@@ -706,8 +706,8 @@ class ParticleFilter(InferenceModule):
 
         self.particles = []
         for position in self.allPositions:
-            probability = samples.count(position) * 1.0 / self.numParticles
-            self.particles.append((position, probability))
+            countParticles = samples.count(position)
+            self.particles.append((position, countParticles))
 
         if self.getBeliefDistribution().total() == 0:
             self.initializeUniformly(gameState)
@@ -724,6 +724,19 @@ class ParticleFilter(InferenceModule):
         gameState.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        newParticles = []
+        for oldPosition, countParticles in self.particles:
+            newPosDist = self.getPositionDistribution(gameState, oldPosition)
+            samples = [newPosDist.sample() for _ in range(countParticles)]
+
+            uniquePositions = set(samples)
+            posCounts = {}
+            for position in uniquePositions:
+                posCounts[position] = samples.count(position)
+
+            for position, countParticles in posCounts.items():
+                newParticles.append([position, countParticles])
+
+        self.particles = newParticles
         "*** END YOUR CODE HERE ***"
 
